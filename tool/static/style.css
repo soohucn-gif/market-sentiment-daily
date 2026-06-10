@@ -1,0 +1,75 @@
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+  margin: 0;
+  background: #f6f7f9;
+  color: #1a1a1a;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+header h1 { margin: 0; font-size: 20px; }
+.controls { display: flex; gap: 12px; align-items: center; }
+.range-picker button {
+  background: #fff; border: 1px solid #d1d5db; padding: 6px 14px;
+  cursor: pointer; font-size: 13px; margin-left: -1px;
+}
+.range-picker button:first-child { border-radius: 4px 0 0 4px; }
+.range-picker button:last-child { border-radius: 0 4px 4px 0; }
+.range-picker button.active { background: #1f2937; color: #fff; }
+#refresh-btn {
+  background: #fff; border: 1px solid #d1d5db; padding: 6px 12px;
+  font-size: 16px; cursor: pointer; border-radius: 4px;
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  padding: 18px 24px 0;
+}
+.mini-card {
+  background: #fff; border-radius: 8px; padding: 14px; text-align: center;
+  border-left: 4px solid #9ca3af;
+}
+.mini-card.zone-fear { border-left-color: #ef4444; }
+.mini-card.zone-caution { border-left-color: #f59e0b; }
+.mini-card.zone-neutral { border-left-color: #9ca3af; }
+.mini-card.zone-good { border-left-color: #10b981; }
+.mini-card.zone-greed { border-left-color: #059669; }
+.mini-card.zone-error { border-left-color: #6b7280; background: #f3f4f6; }
+.mini-card .label { font-size: 12px; color: #6b7280; }
+.mini-card .value { font-size: 28px; font-weight: 600; margin: 4px 0; }
+.mini-card .desc { font-size: 12px; color: #374151; }
+
+.indicator {
+  background: #fff;
+  margin: 18px 24px;
+  padding: 18px 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.indicator h2 { margin: 0 0 12px 0; font-size: 16px; color: #111827; }
+.indicator .note {
+  margin: -6px 0 12px 0; font-size: 12px; color: #6b7280; line-height: 1.6;
+}
+.indicator .note code {
+  background: #f3f4f6; padding: 1px 5px; border-radius: 3px; font-size: 11px;
+}
+.chart-row { display: flex; gap: 16px; }
+.chart-gauge { width: 280px; height: 280px; flex-shrink: 0; }
+.chart-line { flex: 1; height: 280px; }
+#chart-vix, #chart-breadth, #chart-aaii, #chart-putcall, #chart-sdtoken { height: 320px; }
+
+footer {
+  text-align: center; padding: 24px; color: #6b7280; font-size: 12px;
+}
+.error-banner {
+  background: #fef2f2; color: #991b1b; padding: 8px 12px; border-radius: 4px;
+  font-size: 13px;
+}

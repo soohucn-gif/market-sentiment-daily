@@ -1,0 +1,39 @@
+{
+  "series": "Silicon Data LLM Token Expenditure Index",
+  "unit": "Usage-weighted average price (USD) per 1M LLM tokens, market-wide",
+  "methodology": "Expenditure/usage-weighted average token price across major LLMs — captures the market's marginal willingness to pay. Rising = migration toward expensive frontier closed models; falling = migration toward cheap open-weight models. Published by Silicon Data (silicondata.com); carried on Bloomberg/Macrobond; no free structured feed.",
+  "updated_at": "2026-06-10",
+  "update_workflow": "Run /update-silicon-data in a Claude session — Claude reads @Silicon_Data public posts and press coverage, then appends dated points here. Never overwrite existing points; estimates must set estimated=true with derivation in source.",
+  "points": [
+    {
+      "date": "2025-12-05",
+      "value": 1.03,
+      "estimated": true,
+      "source": "Derived: 1.99 / 1.94 from 'rose 94% over six months' ending 2026-06-05 (Silicon Data via Digg, 2026-06-05)"
+    },
+    {
+      "date": "2026-01-01",
+      "value": 1.27,
+      "estimated": false,
+      "source": "Carmen Li (Silicon Data CEO) LinkedIn, ~2026-05: 'LLM Token Expenditure Index surges 38% YTD: 1.27 -> 1.76'"
+    },
+    {
+      "date": "2026-05-10",
+      "value": 1.76,
+      "estimated": true,
+      "source": "End value of '+38% over five months YTD' (same LinkedIn post); value reported, date approximated to post date ~2026-05-10"
+    },
+    {
+      "date": "2026-06-05",
+      "value": 1.99,
+      "estimated": false,
+      "source": "Silicon Data via Digg, 2026-06-05: 'Token Expenditure Index stagnates at 1.99'"
+    }
+  ],
+  "milestones": [
+    {
+      "date": "2026-05-20",
+      "note": "All-time high reported (@TokenTalk3x on X); exact value not published"
+    }
+  ]
+}

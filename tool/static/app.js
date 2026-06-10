@@ -1,0 +1,305 @@
+const RANGES = { "1Y": 365, "3Y": 365*3, "5Y": 365*5, "MAX": null };
+let state = { range: "3Y", payload: null, charts: {} };
+
+function showError(containerId, msg) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  // Dispose existing ECharts instance so a stale chart doesn't show
+  if (state.charts[containerId]) {
+    state.charts[containerId].dispose();
+    delete state.charts[containerId];
+  }
+  el.innerHTML = `<div class="error-banner">数据获取失败：${msg || "未知错误"}</div>`;
+}
+
+const FNG_ZONE = v =>
+  v < 25 ? { cls: "zone-fear",    desc: "极度恐慌" } :
+  v < 45 ? { cls: "zone-caution", desc: "恐慌" } :
+  v < 55 ? { cls: "zone-neutral", desc: "中性" } :
+  v < 75 ? { cls: "zone-good",    desc: "贪婪" } :
+           { cls: "zone-greed",   desc: "极度贪婪" };
+
+const VIX_ZONE = v =>
+  v < 12 ? { cls: "zone-greed",   desc: "极低" } :
+  v < 15 ? { cls: "zone-good",    desc: "低" } :
+  v < 20 ? { cls: "zone-neutral", desc: "中" } :
+  v < 30 ? { cls: "zone-caution", desc: "偏高" } :
+           { cls: "zone-fear",    desc: "恐慌" };
+
+const BREADTH_ZONE = v =>
+  v < 30 ? { cls: "zone-fear",    desc: "弱" } :
+  v < 50 ? { cls: "zone-caution", desc: "偏弱" } :
+  v < 70 ? { cls: "zone-neutral", desc: "中性" } :
+           { cls: "zone-good",    desc: "强" };
+
+const PC_ZONE = v =>
+  v < 0.6 ? { cls: "zone-greed",   desc: "极乐观" } :
+  v < 0.8 ? { cls: "zone-good",    desc: "乐观" } :
+  v < 1.0 ? { cls: "zone-neutral", desc: "中性" } :
+            { cls: "zone-fear",    desc: "悲观" };
+
+// Token Expenditure Index has no canonical absolute bands — classify by
+// trend vs the previous curated point. Rising = market paying up for
+// frontier models (AI demand strong); falling = migration to cheap models.
+const SDTOKEN_ZONE = history => {
+  if (!history || history.length < 2) return { cls: "zone-neutral", desc: "数据不足" };
+  const last = history[history.length - 1].value;
+  const prev = history[history.length - 2].value;
+  const pct = (last - prev) / prev * 100;
+  return pct > 3  ? { cls: "zone-good",    desc: "付费意愿上行" } :
+         pct < -3 ? { cls: "zone-caution", desc: "付费意愿回落" } :
+                    { cls: "zone-neutral", desc: "停滞" };
+};
+
+function sliceSeries(series, days) {
+  if (days === null) return series;
+  if (!series || !series.length) return [];
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  return series.filter(p => p.date >= cutoffStr);
+}
+
+function renderOverview(ind) {
+  const o = document.getElementById("overview");
+  o.innerHTML = "";
+  const items = [
+    { key: "fng",     title: "Fear & Greed",
+      get: d => d.status === "ok"
+        ? { value: d.current.value.toFixed(0), zone: FNG_ZONE(d.current.value) }
+        : null },
+    { key: "vix",     title: "VIX",
+      get: d => d.status === "ok"
+        ? { value: d.current.value.toFixed(1), zone: VIX_ZONE(d.current.value) }
+        : null },
+    { key: "breadth", title: "Breadth (NDX)",
+      get: d => d.status === "ok"
+        ? { value: d.current.ndx.toFixed(0) + "%", zone: BREADTH_ZONE(d.current.ndx) }
+        : null },
+    { key: "aaii",    title: "AAII Bull-Bear",
+      get: d => d.status === "ok"
+        ? { value: (d.current.bullish - d.current.bearish).toFixed(0),
+            zone: (d.current.bullish - d.current.bearish) > 10 ? FNG_ZONE(70) : FNG_ZONE(45) }
+        : null },
+    { key: "putcall", title: "Put/Call",
+      get: d => d.status === "ok"
+        ? { value: d.current.value.toFixed(2), zone: PC_ZONE(d.current.value) }
+        : null },
+    { key: "sdtoken", title: "Token 支出指数",
+      get: d => d.status === "ok"
+        ? { value: d.current.value.toFixed(2), zone: SDTOKEN_ZONE(d.history) }
+        : null },
+  ];
+  for (const it of items) {
+    const d = ind[it.key];
+    const card = document.createElement("div");
+    if (!d || d.status !== "ok") {
+      card.className = "mini-card zone-error";
+      card.innerHTML = `<div class="label">${it.title}</div>
+        <div class="value">—</div><div class="desc">数据获取失败</div>`;
+    } else {
+      const v = it.get(d);
+      card.className = `mini-card ${v.zone.cls}`;
+      card.innerHTML = `<div class="label">${it.title}</div>
+        <div class="value">${v.value}</div><div class="desc">${v.zone.desc}</div>`;
+    }
+    o.appendChild(card);
+  }
+}
+
+function getOrInitChart(id) {
+  if (state.charts[id]) return state.charts[id];
+  const c = echarts.init(document.getElementById(id));
+  state.charts[id] = c;
+  window.addEventListener("resize", () => c.resize());
+  return c;
+}
+
+function lineChartOption(title, series, refLines = [], colorBands = []) {
+  return {
+    grid: { left: 50, right: 24, top: 30, bottom: 40 },
+    tooltip: { trigger: "axis" },
+    xAxis: { type: "category", data: series[0]?.data.map(p => p.date) ?? [] },
+    yAxis: { type: "value", scale: true },
+    series: series.map((s, i) => ({
+      name: s.name,
+      type: "line",
+      data: s.data.map(p => p.value),
+      smooth: true,
+      symbol: "none",
+      lineStyle: { width: 1.5 },
+      markLine: i === 0 && refLines.length ? {
+        symbol: "none", silent: true,
+        data: refLines.map(r => ({ yAxis: r.y, label: { formatter: r.label }, lineStyle: { type: "dashed", color: "#9ca3af" } }))
+      } : undefined,
+      markArea: i === 0 && colorBands.length ? {
+        silent: true,
+        data: colorBands.map(b => [{ yAxis: b.from, itemStyle: { color: b.color } }, { yAxis: b.to }])
+      } : undefined,
+    })),
+    legend: { top: 0, right: 0 },
+  };
+}
+
+function renderFng(d) {
+  if (d.status !== "ok") {
+    showError("chart-fng-gauge", d.error_msg);
+    showError("chart-fng-line", d.error_msg);
+    return;
+  }
+  const sliced = sliceSeries(d.history, RANGES[state.range]);
+  // Gauge
+  const gauge = getOrInitChart("chart-fng-gauge");
+  gauge.setOption({
+    series: [{
+      type: "gauge",
+      startAngle: 200, endAngle: -20,
+      min: 0, max: 100,
+      axisLine: { lineStyle: { width: 18, color: [
+        [0.25, "#ef4444"], [0.45, "#f59e0b"], [0.55, "#9ca3af"],
+        [0.75, "#10b981"], [1, "#059669"]
+      ] } },
+      pointer: { width: 5 },
+      detail: { formatter: "{value}", fontSize: 28, offsetCenter: [0, "70%"] },
+      data: [{ value: d.current.value, name: d.current.label }],
+      title: { offsetCenter: [0, "92%"], fontSize: 12 },
+    }],
+  });
+  // Line
+  const line = getOrInitChart("chart-fng-line");
+  line.setOption(lineChartOption("F&G", [{ name: "F&G", data: sliced }],
+    [], [
+      { from: 0, to: 25, color: "rgba(239,68,68,0.08)" },
+      { from: 25, to: 45, color: "rgba(245,158,11,0.08)" },
+      { from: 55, to: 75, color: "rgba(16,185,129,0.08)" },
+      { from: 75, to: 100, color: "rgba(5,150,105,0.08)" },
+    ]), true);
+}
+
+function renderVix(d) {
+  if (d.status !== "ok") {
+    showError("chart-vix", d.error_msg);
+    return;
+  }
+  const sliced = sliceSeries(d.history, RANGES[state.range]);
+  const chart = getOrInitChart("chart-vix");
+  chart.setOption(lineChartOption("VIX", [{ name: "VIX", data: sliced }],
+    [{ y: 20, label: "20" }, { y: 30, label: "30" }],
+    [
+      { from: 0, to: 15, color: "rgba(5,150,105,0.06)" },
+      { from: 20, to: 30, color: "rgba(245,158,11,0.06)" },
+      { from: 30, to: 100, color: "rgba(239,68,68,0.06)" },
+    ]), true);
+}
+
+function renderBreadth(d) {
+  if (d.status !== "ok") {
+    showError("chart-breadth", d.error_msg);
+    return;
+  }
+  const ndx = sliceSeries(d.ndx, RANGES[state.range]);
+  const spx = sliceSeries(d.spx, RANGES[state.range]);
+  const chart = getOrInitChart("chart-breadth");
+  chart.setOption(lineChartOption("Breadth",
+    [{ name: "NDX 50DMA%", data: ndx }, { name: "SPX 50DMA%", data: spx }],
+    [{ y: 50, label: "50%" }, { y: 70, label: "70%" }]), true);
+}
+
+function renderAaii(d) {
+  if (d.status !== "ok") {
+    showError("chart-aaii", d.error_msg);
+    return;
+  }
+  const chart = getOrInitChart("chart-aaii");
+  chart.setOption(lineChartOption("AAII", [
+    { name: "Bullish", data: sliceSeries(d.bullish, RANGES[state.range]) },
+    { name: "Neutral", data: sliceSeries(d.neutral, RANGES[state.range]) },
+    { name: "Bearish", data: sliceSeries(d.bearish, RANGES[state.range]) },
+  ]), true);
+}
+
+function renderPutCall(d) {
+  if (d.status !== "ok") {
+    showError("chart-putcall", d.error_msg);
+    return;
+  }
+  const sliced = sliceSeries(d.history, RANGES[state.range]);
+  const chart = getOrInitChart("chart-putcall");
+  chart.setOption(lineChartOption("P/C", [{ name: "Put/Call", data: sliced }],
+    [{ y: 0.7, label: "0.7" }, { y: 1.0, label: "1.0" }]), true);
+}
+
+function renderSdtoken(d) {
+  if (d.status !== "ok") {
+    showError("chart-sdtoken", d.error_msg);
+    return;
+  }
+  // Curated series is sparse — slice only from 1Y down; 3Y/5Y/Max show all.
+  const days = RANGES[state.range];
+  const sliced = days !== null && days <= 365 ? sliceSeries(d.history, days) : d.history;
+  const estimated = new Set(d.estimated_dates || []);
+  const chart = getOrInitChart("chart-sdtoken");
+  const option = lineChartOption("Token Index",
+    [{ name: "USD / 1M tokens (加权)", data: sliced }]);
+  // Sparse manual data: show each point; estimated points hollow + gray.
+  option.series[0].symbol = "circle";
+  option.series[0].symbolSize = 8;
+  option.series[0].data = sliced.map(p => estimated.has(p.date)
+    ? { value: p.value, symbol: "emptyCircle",
+        itemStyle: { color: "#fff", borderColor: "#9ca3af", borderWidth: 2 } }
+    : p.value);
+  chart.setOption(option, true);
+  const asof = document.getElementById("sdtoken-asof");
+  if (asof) asof.textContent = `${d.current.date}（条目更新于 ${d.updated_at || "?"}）`;
+}
+
+function renderAll() {
+  if (!state.payload) return;
+  const ind = state.payload.indicators;
+  renderOverview(ind);
+  renderFng(ind.fng);
+  renderVix(ind.vix);
+  renderBreadth(ind.breadth);
+  renderAaii(ind.aaii);
+  renderPutCall(ind.putcall);
+  renderSdtoken(ind.sdtoken);
+  const snapshotSuffix = window.__PRELOADED__ ? "（云端快照）" : "";
+  document.getElementById("fetched-at").textContent =
+    new Date(state.payload.fetched_at).toLocaleString("zh-CN") + snapshotSuffix;
+}
+
+async function loadData(force = false) {
+  const url = force ? "/api/indicators?force=1" : "/api/indicators";
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    state.payload = await r.json();
+    renderAll();
+  } catch (e) {
+    document.getElementById("overview").innerHTML =
+      `<div class="error-banner" style="grid-column: 1 / -1;">
+        后端获取失败：${e.message}。请检查终端日志，然后点 ⟳ 重试。
+      </div>`;
+    document.getElementById("fetched-at").textContent = "失败";
+    console.error("loadData failed", e);
+  }
+}
+
+document.getElementById("range-picker").addEventListener("click", e => {
+  if (e.target.tagName !== "BUTTON") return;
+  for (const b of e.currentTarget.children) b.classList.remove("active");
+  e.target.classList.add("active");
+  state.range = e.target.dataset.range;
+  renderAll();
+});
+
+document.getElementById("refresh-btn").addEventListener("click", () => loadData(true));
+
+if (window.__PRELOADED__) {
+  // Static snapshot mode (cloud-generated): data is baked in, no backend.
+  document.getElementById("refresh-btn").style.display = "none";
+  state.payload = window.__PRELOADED__;
+  renderAll();
+} else {
+  loadData(false);
+}

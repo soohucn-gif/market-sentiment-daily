@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>美股情绪 Dashboard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>美股情绪 Dashboard</h1>
+    <div class="controls">
+      <div class="range-picker" id="range-picker">
+        <button data-range="1Y">1Y</button>
+        <button data-range="3Y" class="active">3Y</button>
+        <button data-range="5Y">5Y</button>
+        <button data-range="MAX">Max</button>
+      </div>
+      <button id="refresh-btn" title="强制刷新">⟳</button>
+    </div>
+  </header>
+
+  <section class="overview" id="overview"></section>
+
+  <section class="indicator" id="ind-fng">
+    <h2>① CNN Fear &amp; Greed</h2>
+    <div class="chart-row">
+      <div class="chart-gauge" id="chart-fng-gauge"></div>
+      <div class="chart-line" id="chart-fng-line"></div>
+    </div>
+  </section>
+
+  <section class="indicator" id="ind-vix">
+    <h2>② VIX (Volatility Index)</h2>
+    <div class="chart-line" id="chart-vix"></div>
+  </section>
+
+  <section class="indicator" id="ind-breadth">
+    <h2>③ Market Breadth — % above 50DMA</h2>
+    <div class="chart-line" id="chart-breadth"></div>
+  </section>
+
+  <section class="indicator" id="ind-aaii">
+    <h2>④ AAII Investor Sentiment</h2>
+    <div class="chart-line" id="chart-aaii"></div>
+  </section>
+
+  <section class="indicator" id="ind-putcall">
+    <h2>⑤ Put/Call Ratio (CBOE Equity)</h2>
+    <div class="chart-line" id="chart-putcall"></div>
+  </section>
+
+  <section class="indicator" id="ind-sdtoken">
+    <h2>⑥ LLM Token Expenditure Index (Silicon Data)</h2>
+    <p class="note">市场为每百万 LLM token 支付的使用量加权均价 — AI 边际付费意愿。无公开 API，由 Claude 从
+      @Silicon_Data 公开发布人工跟踪（空心点为估算值）；在 Claude 会话中运行
+      <code>/update-silicon-data</code> 可补充最新值。数据截至 <span id="sdtoken-asof">—</span>。</p>
+    <div class="chart-line" id="chart-sdtoken"></div>
+  </section>
+
+  <footer>
+    数据更新于 <span id="fetched-at">—</span> · 数据源：CNN / Yahoo Finance / AAII / CBOE / Silicon Data
+  </footer>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
