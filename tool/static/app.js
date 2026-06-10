@@ -64,6 +64,10 @@ function renderOverview(ind) {
   const o = document.getElementById("overview");
   o.innerHTML = "";
   const items = [
+    { key: "sdtoken", title: "Token 支出指数",
+      get: d => d.status === "ok"
+        ? { value: d.current.value.toFixed(2), zone: SDTOKEN_ZONE(d.history) }
+        : null },
     { key: "fng",     title: "Fear & Greed",
       get: d => d.status === "ok"
         ? { value: d.current.value.toFixed(0), zone: FNG_ZONE(d.current.value) }
@@ -84,10 +88,6 @@ function renderOverview(ind) {
     { key: "putcall", title: "Put/Call",
       get: d => d.status === "ok"
         ? { value: d.current.value.toFixed(2), zone: PC_ZONE(d.current.value) }
-        : null },
-    { key: "sdtoken", title: "Token 支出指数",
-      get: d => d.status === "ok"
-        ? { value: d.current.value.toFixed(2), zone: SDTOKEN_ZONE(d.history) }
         : null },
   ];
   for (const it of items) {
@@ -257,12 +257,12 @@ function renderAll() {
   if (!state.payload) return;
   const ind = state.payload.indicators;
   renderOverview(ind);
+  renderSdtoken(ind.sdtoken);
   renderFng(ind.fng);
   renderVix(ind.vix);
   renderBreadth(ind.breadth);
   renderAaii(ind.aaii);
   renderPutCall(ind.putcall);
-  renderSdtoken(ind.sdtoken);
   const snapshotSuffix = window.__PRELOADED__ ? "（云端快照）" : "";
   document.getElementById("fetched-at").textContent =
     new Date(state.payload.fetched_at).toLocaleString("zh-CN") + snapshotSuffix;

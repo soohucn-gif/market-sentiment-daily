@@ -22,8 +22,16 @@
 
   <section class="overview" id="overview"></section>
 
+  <section class="indicator" id="ind-sdtoken">
+    <h2>① LLM Token Expenditure Index (Silicon Data)</h2>
+    <p class="note">市场为每百万 LLM token 支付的使用量加权均价 — AI 边际付费意愿。无公开 API，由 Claude 从
+      @Silicon_Data 公开发布人工跟踪（空心点为估算值）；在 Claude 会话中运行
+      <code>/update-silicon-data</code> 可补充最新值。数据截至 <span id="sdtoken-asof">—</span>。</p>
+    <div class="chart-line" id="chart-sdtoken"></div>
+  </section>
+
   <section class="indicator" id="ind-fng">
-    <h2>① CNN Fear &amp; Greed</h2>
+    <h2>② CNN Fear &amp; Greed</h2>
     <div class="chart-row">
       <div class="chart-gauge" id="chart-fng-gauge"></div>
       <div class="chart-line" id="chart-fng-line"></div>
@@ -31,31 +39,23 @@
   </section>
 
   <section class="indicator" id="ind-vix">
-    <h2>② VIX (Volatility Index)</h2>
+    <h2>③ VIX (Volatility Index)</h2>
     <div class="chart-line" id="chart-vix"></div>
   </section>
 
   <section class="indicator" id="ind-breadth">
-    <h2>③ Market Breadth — % above 50DMA</h2>
+    <h2>④ Market Breadth — % above 50DMA</h2>
     <div class="chart-line" id="chart-breadth"></div>
   </section>
 
   <section class="indicator" id="ind-aaii">
-    <h2>④ AAII Investor Sentiment</h2>
+    <h2>⑤ AAII Investor Sentiment</h2>
     <div class="chart-line" id="chart-aaii"></div>
   </section>
 
   <section class="indicator" id="ind-putcall">
-    <h2>⑤ Put/Call Ratio (CBOE Equity)</h2>
+    <h2>⑥ Put/Call Ratio (CBOE Equity)</h2>
     <div class="chart-line" id="chart-putcall"></div>
-  </section>
-
-  <section class="indicator" id="ind-sdtoken">
-    <h2>⑥ LLM Token Expenditure Index (Silicon Data)</h2>
-    <p class="note">市场为每百万 LLM token 支付的使用量加权均价 — AI 边际付费意愿。无公开 API，由 Claude 从
-      @Silicon_Data 公开发布人工跟踪（空心点为估算值）；在 Claude 会话中运行
-      <code>/update-silicon-data</code> 可补充最新值。数据截至 <span id="sdtoken-asof">—</span>。</p>
-    <div class="chart-line" id="chart-sdtoken"></div>
   </section>
 
   <footer>
