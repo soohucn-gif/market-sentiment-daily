@@ -32,9 +32,10 @@
 
   <section class="indicator" id="ind-fng">
     <h2>② CNN Fear &amp; Greed</h2>
-    <p class="note">CNN 综合 7 个子指标（动量、强弱、宽度、期权、垃圾债需求、避险需求、波动率）合成的 0-100 情绪温度计：
-      &lt;25 极度恐慌 / 25-45 恐慌 / 45-55 中性 / 55-75 贪婪 / &gt;75 极度贪婪。极端读数常用作反向信号——极恐近底、极贪近顶。
-      源：CNN dataviz API（准实时，盘中变动）。</p>
+    <p class="note">CNN 综合 7 个子指标（动量、强弱、宽度、期权、垃圾债需求、避险需求、波动率）合成的 0-100 情绪温度计。
+      <b>四象限读法：75-100 ☀️ 大太阳（贪婪过热，警惕回调）/ 50-75 🌤 晴天（情绪偏暖）/ 25-50 ☁️ 阴天（情绪偏冷）/ 0-25 ❄️ 暴风雪（极度恐慌，反向常近底）</b>。
+      极端读数常用作反向信号。源：CNN dataviz API；随美股盘中更新，<b>北京早晨快照 = 美东前一交易日收盘后的状态</b>（盘前期货的波动要等当日美股开盘后才会反映进来）。
+      数据截至 <span id="fng-asof">—</span>。</p>
     <div class="chart-row">
       <div class="chart-gauge" id="chart-fng-gauge"></div>
       <div class="chart-line" id="chart-fng-line"></div>
@@ -45,32 +46,36 @@
     <h2>③ VIX (Volatility Index)</h2>
     <p class="note">标普 500 期权隐含的未来 30 天年化波动率，俗称"恐慌指数"——市场为对冲下跌愿付的保险价格。
       &lt;15 平静 / 15-20 正常 / 20-30 紧张 / &gt;30 恐慌。注意：本图为 <b>CBOE 现货 VIX 指数日收盘</b>（非 /VX 期货，期货价含升贴水会有差异）。
-      源：CBOE 官方 EOD 数据 → Yahoo → FRED 三级链。</p>
+      源：CBOE 官方 EOD 数据 → Yahoo → FRED 三级链。数据截至 <span id="vix-asof">—</span>。</p>
     <div class="chart-line" id="chart-vix"></div>
   </section>
 
-  <section class="indicator" id="ind-breadth">
-    <h2>④ Market Breadth — % above 50DMA</h2>
-    <p class="note">纳指 100 / 标普 500 中股价站上 50 日均线的成分股比例——衡量上涨是"普涨"还是少数权重股拉指数。
-      &gt;70% 强势普涨 / 50-70% 健康 / 30-50% 偏弱（结构性行情）/ &lt;30% 超卖。指数新高但宽度走低 = 顶背离警示。
-      源：StockCharts $NDXA50R / $SPXA50R（日收盘）。</p>
-    <div class="chart-line" id="chart-breadth"></div>
-  </section>
-
   <section class="indicator" id="ind-aaii">
-    <h2>⑤ AAII Investor Sentiment</h2>
-    <p class="note">美国个人投资者协会每周问卷：未来 6 个月看涨/中性/看跌占比。Bull-Bear 净值常态约 +6；
-      &gt;+20 散户过热（反向偏空）/ &lt;-20 散户过冷（反向偏多，历史上常对应阶段性底部附近）。散户情绪是典型反向指标。
-      源：aaii.com 官方周度 XLS（每周四美东发布）。</p>
+    <h2>④ AAII Investor Sentiment（散户牛熊调查）</h2>
+    <p class="note">美国个人投资者协会每周问一遍散户：「未来 6 个月你看涨还是看跌？」<b>Bull-Bear 净值 = 看涨% − 看跌%</b>，
+      就是一支"散户多空温度计"：正数 = 看涨的人多，负数 = 看跌的人多。历史常态约 +6。
+      它是典型<b>反向指标</b>：&gt;+20 散户过热——人人喊涨时往往离顶不远（反向偏空）；&lt;-20 散户过冷——
+      散户吓坏的时候历史上常常已接近阶段性底部（反向偏多）；中间区域参考意义弱。
+      源：aaii.com 官方周度 XLS（每周四美东发布，周中数值不变是正常的）。数据截至 <span id="aaii-asof">—</span>。</p>
     <div class="chart-line" id="chart-aaii"></div>
   </section>
 
   <section class="indicator" id="ind-putcall">
-    <h2>⑥ Put/Call Ratio (CBOE Equity)</h2>
-    <p class="note">CBOE 个股期权认沽/认购成交量比（equity-only，剔除指数对冲盘）。
-      &lt;0.6 极度乐观（自满风险）/ 0.6-0.8 乐观 / 0.8-1.0 中性 / &gt;1.0 避险情绪重（反向看常近底）。
-      源：StockCharts $CPCE（CBOE 授权数据，日收盘）。</p>
+    <h2>⑤ Put/Call Ratio（看跌/看涨期权比）</h2>
+    <p class="note">期权市场上「买保险的人」和「追涨的人」之比：<b>put（认沽，押跌/买保护）成交量 ÷ call（认购，押涨）成交量</b>，
+      只统计个股期权（equity-only，剔除机构指数对冲盘）。<b>比值越低 = 越没人买保护、大家都在追涨</b>：
+      &lt;0.6 极度乐观（自满风险，反向警惕回调）/ 0.6-0.8 乐观 / 0.8-1.0 中性 /
+      <b>&gt;1.0 = 买保险的超过追涨的，避险情绪浓</b>（恐慌见顶时反向看常接近底部）。
+      源：StockCharts $CPCE（CBOE 授权数据，日收盘）。数据截至 <span id="pc-asof">—</span>。</p>
     <div class="chart-line" id="chart-putcall"></div>
+  </section>
+
+  <section class="indicator" id="ind-breadth">
+    <h2>⑥ Market Breadth — % above 50DMA</h2>
+    <p class="note">纳指 100 / 标普 500 中股价站上 50 日均线的成分股比例——衡量上涨是"普涨"还是少数权重股拉指数。
+      &gt;70% 强势普涨 / 50-70% 健康 / 30-50% 偏弱（结构性行情）/ &lt;30% 超卖。指数新高但宽度走低 = 顶背离警示。
+      源：StockCharts $NDXA50R / $SPXA50R（日收盘）。数据截至 <span id="breadth-asof">—</span>。</p>
+    <div class="chart-line" id="chart-breadth"></div>
   </section>
 
   <footer>

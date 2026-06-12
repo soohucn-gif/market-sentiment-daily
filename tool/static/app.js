@@ -12,12 +12,20 @@ function showError(containerId, msg) {
   el.innerHTML = `<div class="error-banner">数据获取失败：${msg || "未知错误"}</div>`;
 }
 
+// F&G 四象限天气读法（用户约定）：0-25 暴风雪 / 25-50 阴天 / 50-75 晴天 / 75-100 大太阳
 const FNG_ZONE = v =>
-  v < 25 ? { cls: "zone-fear",    desc: "极度恐慌" } :
-  v < 45 ? { cls: "zone-caution", desc: "恐慌" } :
-  v < 55 ? { cls: "zone-neutral", desc: "中性" } :
-  v < 75 ? { cls: "zone-good",    desc: "贪婪" } :
-           { cls: "zone-greed",   desc: "极度贪婪" };
+  v < 25 ? { cls: "zone-fear",    desc: "❄️ 暴风雪" } :
+  v < 50 ? { cls: "zone-caution", desc: "☁️ 阴天" } :
+  v < 75 ? { cls: "zone-good",    desc: "🌤 晴天" } :
+           { cls: "zone-greed",   desc: "☀️ 大太阳" };
+
+// AAII 散户多空温度计：反向指标，极端值才有信号意义
+const AAII_ZONE = s =>
+  s > 20  ? { cls: "zone-caution", desc: "散户过热·反向偏空" } :
+  s > 10  ? { cls: "zone-good",    desc: "散户偏多" } :
+  s > -10 ? { cls: "zone-neutral", desc: "散户中性" } :
+  s > -20 ? { cls: "zone-caution", desc: "散户偏空" } :
+            { cls: "zone-fear",    desc: "散户过冷·反向偏多" };
 
 const VIX_ZONE = v =>
   v < 12 ? { cls: "zone-greed",   desc: "极低" } :
@@ -86,19 +94,19 @@ function renderOverview(ind) {
       get: d => d.status === "ok"
         ? { value: d.current.value.toFixed(1), zone: VIX_ZONE(d.current.value), date: d.current.date }
         : null },
-    { key: "breadth", title: "Breadth (NDX)",
-      get: d => d.status === "ok"
-        ? { value: d.current.ndx.toFixed(0) + "%", zone: BREADTH_ZONE(d.current.ndx), date: lastDate(d.ndx) }
-        : null },
     { key: "aaii",    title: "AAII Bull-Bear",
       get: d => d.status === "ok"
         ? { value: (d.current.bullish - d.current.bearish).toFixed(1),
-            zone: (d.current.bullish - d.current.bearish) > 10 ? FNG_ZONE(70) : FNG_ZONE(45),
+            zone: AAII_ZONE(d.current.bullish - d.current.bearish),
             date: d.current.date }
         : null },
     { key: "putcall", title: "Put/Call",
       get: d => d.status === "ok"
         ? { value: d.current.value.toFixed(2), zone: PC_ZONE(d.current.value), date: d.current.date }
+        : null },
+    { key: "breadth", title: "Breadth (NDX)",
+      get: d => d.status === "ok"
+        ? { value: d.current.ndx.toFixed(0) + "%", zone: BREADTH_ZONE(d.current.ndx), date: lastDate(d.ndx) }
         : null },
   ];
   for (const it of items) {
@@ -126,6 +134,11 @@ function getOrInitChart(id) {
   state.charts[id] = c;
   window.addEventListener("resize", () => c.resize());
   return c;
+}
+
+function setAsOf(spanId, dateStr, stale) {
+  const el = document.getElementById(spanId);
+  if (el && dateStr) el.textContent = dateStr + (stale ? "（种子数据）" : "");
 }
 
 function lineChartOption(title, series, refLines = [], colorBands = []) {
@@ -174,19 +187,20 @@ function renderFng(d) {
       ] } },
       pointer: { width: 5 },
       detail: { formatter: "{value}", fontSize: 28, offsetCenter: [0, "70%"] },
-      data: [{ value: d.current.value, name: d.current.label }],
-      title: { offsetCenter: [0, "92%"], fontSize: 12 },
+      data: [{ value: d.current.value, name: FNG_ZONE(d.current.value).desc }],
+      title: { offsetCenter: [0, "92%"], fontSize: 14 },
     }],
   });
-  // Line
+  // Line — 色带按四象限划分
   const line = getOrInitChart("chart-fng-line");
   line.setOption(lineChartOption("F&G", [{ name: "F&G", data: sliced }],
-    [], [
+    [{ y: 25, label: "25" }, { y: 50, label: "50" }, { y: 75, label: "75" }], [
       { from: 0, to: 25, color: "rgba(239,68,68,0.08)" },
-      { from: 25, to: 45, color: "rgba(245,158,11,0.08)" },
-      { from: 55, to: 75, color: "rgba(16,185,129,0.08)" },
-      { from: 75, to: 100, color: "rgba(5,150,105,0.08)" },
+      { from: 25, to: 50, color: "rgba(245,158,11,0.08)" },
+      { from: 50, to: 75, color: "rgba(16,185,129,0.06)" },
+      { from: 75, to: 100, color: "rgba(5,150,105,0.10)" },
     ]), true);
+  setAsOf("fng-asof", d.history.length ? d.history[d.history.length - 1].date : null, !!d.stale_since_iso);
 }
 
 function renderVix(d) {
@@ -203,6 +217,7 @@ function renderVix(d) {
       { from: 20, to: 30, color: "rgba(245,158,11,0.06)" },
       { from: 30, to: 100, color: "rgba(239,68,68,0.06)" },
     ]), true);
+  setAsOf("vix-asof", d.current.date, !!d.stale_since_iso);
 }
 
 function renderBreadth(d) {
@@ -216,6 +231,7 @@ function renderBreadth(d) {
   chart.setOption(lineChartOption("Breadth",
     [{ name: "NDX 50DMA%", data: ndx }, { name: "SPX 50DMA%", data: spx }],
     [{ y: 50, label: "50%" }, { y: 70, label: "70%" }]), true);
+  setAsOf("breadth-asof", d.ndx.length ? d.ndx[d.ndx.length - 1].date : null, !!d.stale_since_iso);
 }
 
 function renderAaii(d) {
@@ -229,6 +245,7 @@ function renderAaii(d) {
     { name: "Neutral", data: sliceSeries(d.neutral, RANGES[state.range]) },
     { name: "Bearish", data: sliceSeries(d.bearish, RANGES[state.range]) },
   ]), true);
+  setAsOf("aaii-asof", d.current.date, !!d.stale_since_iso);
 }
 
 function renderPutCall(d) {
@@ -240,6 +257,7 @@ function renderPutCall(d) {
   const chart = getOrInitChart("chart-putcall");
   chart.setOption(lineChartOption("P/C", [{ name: "Put/Call", data: sliced }],
     [{ y: 0.7, label: "0.7" }, { y: 1.0, label: "1.0" }]), true);
+  setAsOf("pc-asof", d.current.date, !!d.stale_since_iso);
 }
 
 function renderSdtoken(d) {
@@ -273,9 +291,9 @@ function renderAll() {
   renderSdtoken(ind.sdtoken);
   renderFng(ind.fng);
   renderVix(ind.vix);
-  renderBreadth(ind.breadth);
   renderAaii(ind.aaii);
   renderPutCall(ind.putcall);
+  renderBreadth(ind.breadth);
   const snapshotSuffix = window.__PRELOADED__ ? "（云端快照）" : "";
   document.getElementById("fetched-at").textContent =
     new Date(state.payload.fetched_at).toLocaleString("zh-CN") + snapshotSuffix;
