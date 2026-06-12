@@ -46,6 +46,7 @@ header h1 { margin: 0; font-size: 20px; }
 .mini-card .label { font-size: 12px; color: #6b7280; }
 .mini-card .value { font-size: 28px; font-weight: 600; margin: 4px 0; }
 .mini-card .desc { font-size: 12px; color: #374151; }
+.mini-card .date { font-size: 10px; color: #9ca3af; margin-top: 2px; }
 
 .indicator {
   background: #fff;

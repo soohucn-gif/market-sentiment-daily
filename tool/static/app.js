@@ -41,11 +41,20 @@ const PC_ZONE = v =>
 // Token Expenditure Index has no canonical absolute bands — classify by
 // trend vs the previous curated point. Rising = market paying up for
 // frontier models (AI demand strong); falling = migration to cheap models.
-const SDTOKEN_ZONE = history => {
+// The curated series can lag reality: if a newer DOWNTREND milestone
+// exists past the last hard point (reported decline whose absolute value
+// wasn't published), surface that instead of the stale point-to-point trend.
+const SDTOKEN_ZONE = d => {
+  const history = d.history;
   if (!history || history.length < 2) return { cls: "zone-neutral", desc: "数据不足" };
-  const last = history[history.length - 1].value;
+  const last = history[history.length - 1];
+  const ms = d.milestones || [];
+  const lastMs = ms[ms.length - 1];
+  if (lastMs && lastMs.date > last.date && /DOWNTREND/i.test(lastMs.note || "")) {
+    return { cls: "zone-caution", desc: "报道转跌·官方未出值" };
+  }
   const prev = history[history.length - 2].value;
-  const pct = (last - prev) / prev * 100;
+  const pct = (last.value - prev) / prev * 100;
   return pct > 3  ? { cls: "zone-good",    desc: "付费意愿上行" } :
          pct < -3 ? { cls: "zone-caution", desc: "付费意愿回落" } :
                     { cls: "zone-neutral", desc: "停滞" };
@@ -63,31 +72,33 @@ function sliceSeries(series, days) {
 function renderOverview(ind) {
   const o = document.getElementById("overview");
   o.innerHTML = "";
+  const lastDate = series => series && series.length ? series[series.length - 1].date : null;
   const items = [
     { key: "sdtoken", title: "Token 支出指数",
       get: d => d.status === "ok"
-        ? { value: d.current.value.toFixed(2), zone: SDTOKEN_ZONE(d.history) }
+        ? { value: d.current.value.toFixed(2), zone: SDTOKEN_ZONE(d), date: d.current.date }
         : null },
     { key: "fng",     title: "Fear & Greed",
       get: d => d.status === "ok"
-        ? { value: d.current.value.toFixed(0), zone: FNG_ZONE(d.current.value) }
+        ? { value: d.current.value.toFixed(0), zone: FNG_ZONE(d.current.value), date: lastDate(d.history) }
         : null },
     { key: "vix",     title: "VIX",
       get: d => d.status === "ok"
-        ? { value: d.current.value.toFixed(1), zone: VIX_ZONE(d.current.value) }
+        ? { value: d.current.value.toFixed(1), zone: VIX_ZONE(d.current.value), date: d.current.date }
         : null },
     { key: "breadth", title: "Breadth (NDX)",
       get: d => d.status === "ok"
-        ? { value: d.current.ndx.toFixed(0) + "%", zone: BREADTH_ZONE(d.current.ndx) }
+        ? { value: d.current.ndx.toFixed(0) + "%", zone: BREADTH_ZONE(d.current.ndx), date: lastDate(d.ndx) }
         : null },
     { key: "aaii",    title: "AAII Bull-Bear",
       get: d => d.status === "ok"
-        ? { value: (d.current.bullish - d.current.bearish).toFixed(0),
-            zone: (d.current.bullish - d.current.bearish) > 10 ? FNG_ZONE(70) : FNG_ZONE(45) }
+        ? { value: (d.current.bullish - d.current.bearish).toFixed(1),
+            zone: (d.current.bullish - d.current.bearish) > 10 ? FNG_ZONE(70) : FNG_ZONE(45),
+            date: d.current.date }
         : null },
     { key: "putcall", title: "Put/Call",
       get: d => d.status === "ok"
-        ? { value: d.current.value.toFixed(2), zone: PC_ZONE(d.current.value) }
+        ? { value: d.current.value.toFixed(2), zone: PC_ZONE(d.current.value), date: d.current.date }
         : null },
   ];
   for (const it of items) {
@@ -99,9 +110,11 @@ function renderOverview(ind) {
         <div class="value">—</div><div class="desc">数据获取失败</div>`;
     } else {
       const v = it.get(d);
+      const stale = d.stale_since_iso ? "·种子" : "";
+      const dateLine = v.date ? `<div class="date">截至 ${v.date.slice(5)}${stale}</div>` : "";
       card.className = `mini-card ${v.zone.cls}`;
       card.innerHTML = `<div class="label">${it.title}</div>
-        <div class="value">${v.value}</div><div class="desc">${v.zone.desc}</div>`;
+        <div class="value">${v.value}</div><div class="desc">${v.zone.desc}</div>${dateLine}`;
     }
     o.appendChild(card);
   }

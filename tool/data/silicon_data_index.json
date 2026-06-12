@@ -2,7 +2,7 @@
   "series": "Silicon Data LLM Token Expenditure Index",
   "unit": "Usage-weighted average price (USD) per 1M LLM tokens, market-wide",
   "methodology": "Expenditure/usage-weighted average token price across major LLMs — captures the market's marginal willingness to pay. Rising = migration toward expensive frontier closed models; falling = migration toward cheap open-weight models. Published by Silicon Data (silicondata.com); carried on Bloomberg/Macrobond; no free structured feed.",
-  "updated_at": "2026-06-10",
+  "updated_at": "2026-06-12",
   "update_workflow": "Run /update-silicon-data in a Claude session — Claude reads @Silicon_Data public posts and press coverage, then appends dated points here. Never overwrite existing points; estimates must set estimated=true with derivation in source.",
   "points": [
     {
@@ -34,6 +34,10 @@
     {
       "date": "2026-05-20",
       "note": "All-time high reported (@TokenTalk3x on X); exact value not published"
+    },
+    {
+      "date": "2026-06-11",
+      "note": "DOWNTREND: 7 consecutive down days (longest streak since Jan 2026), fell 11 of past 12 days — BigGo Finance / 36kr 2026-06-10/11 citing Silicon Data & Steno Larsen. Absolute values NOT published; series last hard point remains 1.99 @ 06-05. Steno (06-09): 'the single most important chart in the market right now.'"
     }
   ]
 }
