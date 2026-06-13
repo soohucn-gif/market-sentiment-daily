@@ -46,6 +46,18 @@ const PC_ZONE = v =>
   v < 1.0 ? { cls: "zone-neutral", desc: "中性" } :
             { cls: "zone-fear",    desc: "悲观" };
 
+// 市场温度计（复刻长桥）：温度高 = 估值贵 + 情绪亢奋 = 风险偏高（暖/热色警示），
+// 温度低 = 便宜 + 情绪低迷 = 机会（冷色）。与 F&G 的"高=贪婪绿"语义相反。
+const MTEMP_ZONE = v =>
+  v < 20 ? { cls: "zone-good",    desc: "❄️ 冰点" } :
+  v < 40 ? { cls: "zone-neutral", desc: "偏冷" } :
+  v < 60 ? { cls: "zone-neutral", desc: "温和" } :
+  v < 80 ? { cls: "zone-caution", desc: "偏热" } :
+           { cls: "zone-fear",    desc: "🔥 过热" };
+// 百分位 → 形容词（估值与情绪用不同措辞）
+const pctWordVal = p => p < 20 ? "极低" : p < 40 ? "偏低" : p < 60 ? "中等" : p < 80 ? "偏高" : "极高";
+const pctWordEmo = p => p < 20 ? "低迷" : p < 40 ? "偏冷" : p < 60 ? "中性" : p < 80 ? "偏暖" : "高涨";
+
 // Token Expenditure Index has no canonical absolute bands — classify by
 // trend vs the previous curated point. Rising = market paying up for
 // frontier models (AI demand strong); falling = migration to cheap models.
@@ -89,6 +101,10 @@ function renderOverview(ind) {
     { key: "fng",     title: "Fear & Greed",
       get: d => d.status === "ok"
         ? { value: d.current.value.toFixed(0), zone: FNG_ZONE(d.current.value), date: lastDate(d.history) }
+        : null },
+    { key: "mtemp",   title: "市场温度",
+      get: d => d.status === "ok"
+        ? { value: d.current.value.toFixed(0) + "°", zone: MTEMP_ZONE(d.current.value), date: d.current.date }
         : null },
     { key: "vix",     title: "VIX",
       get: d => d.status === "ok"
@@ -203,6 +219,47 @@ function renderFng(d) {
   setAsOf("fng-asof", d.history.length ? d.history[d.history.length - 1].date : null, !!d.stale_since_iso);
 }
 
+function renderMtemp(d) {
+  if (d.status !== "ok") {
+    showError("chart-mtemp-gauge", d.error_msg);
+    showError("chart-mtemp-line", d.error_msg);
+    return;
+  }
+  const sliced = sliceSeries(d.history, RANGES[state.range]);
+  // Gauge — 冷(蓝)→热(红)，温度高=过热警示
+  const gauge = getOrInitChart("chart-mtemp-gauge");
+  gauge.setOption({
+    series: [{
+      type: "gauge",
+      startAngle: 200, endAngle: -20,
+      min: 0, max: 100,
+      axisLine: { lineStyle: { width: 18, color: [
+        [0.2, "#3b82f6"], [0.4, "#06b6d4"], [0.6, "#9ca3af"],
+        [0.8, "#f59e0b"], [1, "#ef4444"]
+      ] } },
+      pointer: { width: 5 },
+      detail: { formatter: "{value}°", fontSize: 28, offsetCenter: [0, "70%"] },
+      data: [{ value: d.current.value, name: MTEMP_ZONE(d.current.value).desc }],
+      title: { offsetCenter: [0, "92%"], fontSize: 14 },
+    }],
+  });
+  // Line — 温度历史 + 色带（冷区蓝 / 热区橙红）
+  const line = getOrInitChart("chart-mtemp-line");
+  line.setOption(lineChartOption("市场温度", [{ name: "温度", data: sliced }],
+    [{ y: 50, label: "50" }, { y: 80, label: "80" }], [
+      { from: 0, to: 20, color: "rgba(59,130,246,0.08)" },
+      { from: 60, to: 80, color: "rgba(245,158,11,0.08)" },
+      { from: 80, to: 100, color: "rgba(239,68,68,0.10)" },
+    ]), true);
+  const asof = document.getElementById("mtemp-asof");
+  if (asof) {
+    const c = d.current;
+    asof.textContent = `${c.date}${d.stale_since_iso ? "（种子数据）" : ""}`
+      + ` · 估值 ${c.valuation_pct}（${pctWordVal(c.valuation_pct)}，PE ${c.pe}）`
+      + ` · 情绪 ${c.emotion_pct}（${pctWordEmo(c.emotion_pct)}）`;
+  }
+}
+
 function renderVix(d) {
   if (d.status !== "ok") {
     showError("chart-vix", d.error_msg);
@@ -290,6 +347,7 @@ function renderAll() {
   renderOverview(ind);
   renderSdtoken(ind.sdtoken);
   renderFng(ind.fng);
+  renderMtemp(ind.mtemp);
   renderVix(ind.vix);
   renderAaii(ind.aaii);
   renderPutCall(ind.putcall);

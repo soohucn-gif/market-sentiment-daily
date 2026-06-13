@@ -9,7 +9,7 @@ from werkzeug.serving import WSGIRequestHandler
 WSGIRequestHandler.address_string = lambda self: self.client_address[0]
 
 from cache import TTLCache
-from fetchers import cnn_fng, vix, breadth, aaii, putcall, silicon_data
+from fetchers import cnn_fng, vix, breadth, aaii, putcall, silicon_data, market_temp
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +19,7 @@ _cache = TTLCache(ttl_seconds=600)  # 10 min
 
 FETCHERS = {
     "fng": cnn_fng.fetch,
+    "mtemp": market_temp.fetch,
     "vix": vix.fetch,
     "breadth": breadth.fetch,
     "aaii": aaii.fetch,

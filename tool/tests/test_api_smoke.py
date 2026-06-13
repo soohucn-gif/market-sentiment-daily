@@ -2,10 +2,10 @@
 from app import gather_indicators
 
 
-def test_gather_returns_all_six_keys():
+def test_gather_returns_all_seven_keys():
     result = gather_indicators(force=True)
     assert set(result["indicators"].keys()) == {
-        "fng", "vix", "breadth", "aaii", "putcall", "sdtoken",
+        "fng", "vix", "breadth", "aaii", "putcall", "sdtoken", "mtemp",
     }
     for key, val in result["indicators"].items():
         assert val["status"] in ("ok", "error"), f"{key}: {val}"
