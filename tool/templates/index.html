@@ -45,11 +45,11 @@
   <section class="indicator" id="ind-mtemp">
     <h2>③ 市场温度（前个交易日）</h2>
     <p class="note">复刻长桥证券「市场温度」：<b>温度 =（估值百分位 + 情绪百分位）/ 2</b>，范围 0-100。
-      <b>估值百分位</b> = 标普 500 当前 TTM 市盈率（multpl）在近 10 年的百分位（贵不贵，慢变量）；
-      <b>情绪百分位</b> = 当天标普 500 涨跌广度 $SPXADP =(涨−跌)/总 在近 10 年的百分位
-      （数学上等价于长桥「(涨+平/2)/总」占比的百分位）——这是<b>反映当天盘面</b>的快变量，弥补 CNN F&amp;G 几周回看的滞后。
+      <b>情绪百分位</b> = 当天全美股（NYSE+Nasdaq）上涨家数占比「(涨+平/2)/总」在近 10 年的百分位（严格按长桥公式）——<b>反映当天盘面</b>的快变量，弥补 CNN F&amp;G 几周回看的滞后。
+      <b>估值百分位</b> = 标普 500 当前 TTM 市盈率（multpl，<b>市值加权</b>）在近 10 年的百分位（贵不贵，慢变量）。
+      ⚠️ 长桥估值用「全市场 PE 中位数」，但等权/中位数 PE 无免费历史源；市值加权 PE 被大盘科技股拉高，故本项（及温度）会<b>系统性高于</b>长桥的中位数口径——属已知口径差，非数据错误。
       读法：&lt;20 ❄️ 冰点 / 20-40 偏冷 / 40-60 温和 / 60-80 偏热 / &gt;80 🔥 过热。
-      源：StockCharts $SPXADP（日）+ multpl.com S&amp;P500 PE（月）。数据截至 <span id="mtemp-asof">—</span>。</p>
+      源：StockCharts NYSE+Nasdaq 涨跌家数（日）+ multpl.com S&amp;P500 PE（月）。数据截至 <span id="mtemp-asof">—</span>。</p>
     <div class="chart-row">
       <div class="chart-gauge" id="chart-mtemp-gauge"></div>
       <div class="chart-line" id="chart-mtemp-line"></div>

@@ -31,7 +31,7 @@ def test_market_temp_live():
     assert 0 <= cur["emotion_pct"] <= 100
     # temp is the mean of its two components
     assert abs(cur["value"] - (cur["valuation_pct"] + cur["emotion_pct"]) / 2) < 0.6
-    assert -100 <= cur["spxadp"] <= 100
+    assert 0 <= cur["adv_ratio"] <= 100   # 全美股上涨家数占比 %
     assert cur["pe"] > 0
     assert len(d["history"]) > 500
     assert d["history"][0]["date"] < d["history"][-1]["date"]
