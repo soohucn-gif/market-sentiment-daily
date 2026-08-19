@@ -1,6 +1,58 @@
 {
- "fetched_at": "2026-08-17T02:04:23.218588+00:00",
+ "fetched_at": "2026-08-19T02:02:56.410631+00:00",
  "indicators": {
+  "breadth": {
+   "status": "error",
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NDXA50R&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1787104975262: curl: (22) The requested URL returned error: 403"
+  },
+  "mtemp": {
+   "status": "error",
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NYADV&p=D&yr=10&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1787104975260: curl: (22) The requested URL returned error: 403"
+  },
+  "fng": {
+   "status": "error",
+   "error_msg": "RuntimeError: curl failed for https://production.dataviz.cnn.io/index/fearandgreed/graphdata: curl: (22) The requested URL returned error: 403"
+  },
+  "sdtoken": {
+   "status": "ok",
+   "current": {
+    "value": 1.99,
+    "date": "2026-06-05"
+   },
+   "history": [
+    {
+     "date": "2025-12-05",
+     "value": 1.03
+    },
+    {
+     "date": "2026-01-01",
+     "value": 1.27
+    },
+    {
+     "date": "2026-05-10",
+     "value": 1.76
+    },
+    {
+     "date": "2026-06-05",
+     "value": 1.99
+    }
+   ],
+   "updated_at": "2026-06-12",
+   "estimated_dates": [
+    "2025-12-05",
+    "2026-05-10"
+   ],
+   "milestones": [
+    {
+     "date": "2026-05-20",
+     "note": "All-time high reported (@TokenTalk3x on X); exact value not published"
+    },
+    {
+     "date": "2026-06-11",
+     "note": "DOWNTREND: 7 consecutive down days (longest streak since Jan 2026), fell 11 of past 12 days — BigGo Finance / 36kr 2026-06-10/11 citing Silicon Data & Steno Larsen. Absolute values NOT published; series last hard point remains 1.99 @ 06-05. Steno (06-09): 'the single most important chart in the market right now.'"
+    }
+   ]
+  },
   "aaii": {
    "status": "ok",
    "current": {
@@ -24389,61 +24441,9 @@
    ],
    "stale_since_iso": "2026-07-16T06:11:59.708363+00:00"
   },
-  "mtemp": {
-   "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NYADV&p=D&yr=10&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1786932262167: curl: (22) The requested URL returned error: 403"
-  },
-  "sdtoken": {
-   "status": "ok",
-   "current": {
-    "value": 1.99,
-    "date": "2026-06-05"
-   },
-   "history": [
-    {
-     "date": "2025-12-05",
-     "value": 1.03
-    },
-    {
-     "date": "2026-01-01",
-     "value": 1.27
-    },
-    {
-     "date": "2026-05-10",
-     "value": 1.76
-    },
-    {
-     "date": "2026-06-05",
-     "value": 1.99
-    }
-   ],
-   "updated_at": "2026-06-12",
-   "estimated_dates": [
-    "2025-12-05",
-    "2026-05-10"
-   ],
-   "milestones": [
-    {
-     "date": "2026-05-20",
-     "note": "All-time high reported (@TokenTalk3x on X); exact value not published"
-    },
-    {
-     "date": "2026-06-11",
-     "note": "DOWNTREND: 7 consecutive down days (longest streak since Jan 2026), fell 11 of past 12 days — BigGo Finance / 36kr 2026-06-10/11 citing Silicon Data & Steno Larsen. Absolute values NOT published; series last hard point remains 1.99 @ 06-05. Steno (06-09): 'the single most important chart in the market right now.'"
-    }
-   ]
-  },
-  "breadth": {
-   "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NDXA50R&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1786932262168: curl: (22) The requested URL returned error: 403"
-  },
-  "fng": {
-   "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://production.dataviz.cnn.io/index/fearandgreed/graphdata: curl: (22) The requested URL returned error: 403"
-  },
   "putcall": {
    "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24CPCE&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1786932262537: curl: (22) The requested URL returned error: 403"
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24CPCE&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1787104975656: curl: (22) The requested URL returned error: 403"
   },
   "vix": {
    "status": "error",
