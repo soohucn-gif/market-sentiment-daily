@@ -1,6 +1,10 @@
 {
- "fetched_at": "2026-08-27T02:02:30.053181+00:00",
+ "fetched_at": "2026-08-28T02:02:49.931647+00:00",
  "indicators": {
+  "breadth": {
+   "status": "error",
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NDXA50R&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1787882569157: curl: (22) The requested URL returned error: 403"
+  },
   "aaii": {
    "status": "ok",
    "current": {
@@ -24389,10 +24393,6 @@
    ],
    "stale_since_iso": "2026-07-16T06:11:59.708363+00:00"
   },
-  "mtemp": {
-   "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NYADV&p=D&yr=10&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1787796149277: curl: (22) The requested URL returned error: 403"
-  },
   "sdtoken": {
    "status": "ok",
    "current": {
@@ -24433,9 +24433,9 @@
     }
    ]
   },
-  "breadth": {
+  "mtemp": {
    "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NDXA50R&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1787796149278: curl: (22) The requested URL returned error: 403"
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NYADV&p=D&yr=10&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1787882569155: curl: (22) The requested URL returned error: 403"
   },
   "fng": {
    "status": "error",
@@ -24443,7 +24443,7 @@
   },
   "putcall": {
    "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24CPCE&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1787796149536: curl: (22) The requested URL returned error: 403"
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24CPCE&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1787882569403: curl: (22) The requested URL returned error: 403"
   },
   "vix": {
    "status": "error",
