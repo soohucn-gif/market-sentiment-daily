@@ -1,13 +1,13 @@
 {
- "fetched_at": "2026-09-03T02:03:27.225587+00:00",
+ "fetched_at": "2026-09-04T02:02:44.935909+00:00",
  "indicators": {
-  "fng": {
+  "aaii": {
    "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://production.dataviz.cnn.io/index/fearandgreed/graphdata: curl: (22) The requested URL returned error: 403"
+   "error_msg": "RuntimeError: aaii: curl exited 22: curl: (22) The requested URL returned error: 403\n"
   },
   "mtemp": {
    "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NYADV&p=D&yr=10&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788401006451: curl: (22) The requested URL returned error: 403"
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NYADV&p=D&yr=10&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788487364060: curl: (22) The requested URL returned error: 403"
   },
   "sdtoken": {
    "status": "ok",
@@ -49,17 +49,17 @@
     }
    ]
   },
-  "aaii": {
+  "fng": {
    "status": "error",
-   "error_msg": "RuntimeError: aaii: curl exited 22: curl: (22) The requested URL returned error: 403\n"
+   "error_msg": "RuntimeError: curl failed for https://production.dataviz.cnn.io/index/fearandgreed/graphdata: curl: (22) The requested URL returned error: 403"
   },
   "breadth": {
    "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NDXA50R&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788401006452: curl: (22) The requested URL returned error: 403"
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NDXA50R&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788487364063: curl: (22) The requested URL returned error: 403"
   },
   "putcall": {
    "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24CPCE&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788401006704: curl: (22) The requested URL returned error: 403"
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24CPCE&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788487364401: curl: (22) The requested URL returned error: 403"
   },
   "vix": {
    "status": "error",
