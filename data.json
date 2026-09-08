@@ -1,13 +1,13 @@
 {
- "fetched_at": "2026-09-07T02:02:32.545811+00:00",
+ "fetched_at": "2026-09-08T02:03:46.175627+00:00",
  "indicators": {
-  "breadth": {
-   "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NDXA50R&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788746551742: curl: (22) The requested URL returned error: 403"
-  },
   "aaii": {
    "status": "error",
    "error_msg": "RuntimeError: aaii: curl exited 22: curl: (22) The requested URL returned error: 403\n"
+  },
+  "mtemp": {
+   "status": "error",
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NYADV&p=D&yr=10&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788833025261: curl: (22) The requested URL returned error: 403"
   },
   "sdtoken": {
    "status": "ok",
@@ -53,13 +53,13 @@
    "status": "error",
    "error_msg": "RuntimeError: curl failed for https://production.dataviz.cnn.io/index/fearandgreed/graphdata: curl: (22) The requested URL returned error: 403"
   },
-  "mtemp": {
+  "breadth": {
    "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NYADV&p=D&yr=10&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788746551742: curl: (22) The requested URL returned error: 403"
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24NDXA50R&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788833025263: curl: (22) The requested URL returned error: 403"
   },
   "putcall": {
    "status": "error",
-   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24CPCE&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788746552014: curl: (22) The requested URL returned error: 403"
+   "error_msg": "RuntimeError: curl failed for https://stockcharts.com/c-sc/sc?s=%24CPCE&p=D&yr=3&mn=0&dy=0&i=p22657737025&img=text&inspector=yes&randomNumber=1788833025587: curl: (22) The requested URL returned error: 403"
   },
   "vix": {
    "status": "error",
