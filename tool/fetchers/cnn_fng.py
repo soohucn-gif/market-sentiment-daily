@@ -15,7 +15,7 @@ HEADERS = {
     "Accept": "application/json",
     "Referer": "https://edition.cnn.com/markets/fear-and-greed",
 }
-_SEED_MAX_AGE_DAYS = 30
+_SEED_MAX_AGE_DAYS = 365
 
 
 def _fetch_live() -> dict:

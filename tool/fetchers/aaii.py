@@ -47,7 +47,7 @@ _CACHE_MAX_AGE_DAYS = 14
 # (datacenter IPs that Imperva blocks outright) still render the
 # latest-known weekly data. Longer leash than the live cache since cloud
 # refreshes may never succeed.
-_SEED_MAX_AGE_DAYS = 45
+_SEED_MAX_AGE_DAYS = 365
 
 
 def _to_pct(v):

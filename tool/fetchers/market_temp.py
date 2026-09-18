@@ -31,7 +31,7 @@ SC_BASE = "https://stockcharts.com/c-sc/sc"
 SC_STYLE = "p22657737025"  # public "Simple Line Chart" pcode
 PE_URL = "https://www.multpl.com/s-p-500-pe-ratio/table/by-month"
 WINDOW_YEARS = 10
-_SEED_MAX_AGE_DAYS = 14
+_SEED_MAX_AGE_DAYS = 365
 
 _MONTHS = {m: i for i, m in enumerate(
     ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], 1)}
