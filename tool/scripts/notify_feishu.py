@@ -172,6 +172,8 @@ def main():
         sys.exit(1)
 
     ok = send_message(token, open_id, msg)
+    if ok:
+        print("[notify_feishu] Sent OK.")
     sys.exit(0 if ok else 1)
 
 
