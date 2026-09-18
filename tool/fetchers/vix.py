@@ -30,7 +30,7 @@ YAHOO_URL = (
     "?range=max&interval=1d"
 )
 FRED_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS"
-_SEED_MAX_AGE_DAYS = 14
+_SEED_MAX_AGE_DAYS = 365
 _ET = ZoneInfo("America/New_York")
 
 

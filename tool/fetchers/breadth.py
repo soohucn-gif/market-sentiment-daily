@@ -21,7 +21,7 @@ from . import _net
 
 BASE_URL = "https://stockcharts.com/c-sc/sc"
 STYLE_ID = "p22657737025"  # public "Simple Line Chart" pcode
-_SEED_MAX_AGE_DAYS = 30
+_SEED_MAX_AGE_DAYS = 365
 
 
 def _fetch_series(symbol: str) -> list[dict]:
