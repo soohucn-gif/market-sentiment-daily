@@ -1,11 +1,21 @@
-"""Send today's market sentiment summary to Feishu via custom-bot webhook.
+"""Send today's market sentiment summary via Feishu self-built app (direct message).
 
 Usage:
     python3 tool/scripts/notify_feishu.py <data_json_path> [date]
     python3 tool/scripts/notify_feishu.py data.json 2026-09-18
 
-Requires env var FEISHU_WEBHOOK_URL  (from the routine's environment config).
-Exit 0 = sent OK; exit 1 = webhook not configured or send failed.
+Auth flow (same as Macro5 routine):
+    1. POST /auth/v3/tenant_access_token/internal  (APP_ID + APP_SECRET)
+    2. POST /im/v1/messages?receive_id_type=open_id  (tenant_token + OPEN_ID)
+
+Required env var:
+    FEISHU_APP_SECRET   32-char secret for the Feishu self-built app
+
+Optional env vars (non-secret; defaults shown):
+    FEISHU_APP_ID       cli_aaa0ea50ff781beb
+    FEISHU_OPEN_ID      ou_5703cc20f1db48bb4cf00b07eebc0d93
+
+Exit 0 = sent OK; exit 1 = missing secret or send failed.
 """
 import json
 import os
@@ -14,6 +24,9 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+_FEISHU_BASE = "https://open.feishu.cn/open-apis"
+_DEFAULT_APP_ID = "cli_aaa0ea50ff781beb"
+_DEFAULT_OPEN_ID = "ou_5703cc20f1db48bb4cf00b07eebc0d93"
 
 WEATHER = {
     (75, 101): "☀️大太阳",
@@ -46,12 +59,6 @@ def build_message(data: dict, date_str: str) -> str:
             return None
         return v.get(key) if key else v
 
-    def is_stale(name):
-        return bool(inds.get(name, {}).get("stale_since_iso"))
-
-    def status_ok(name):
-        return inds.get(name, {}).get("status") == "ok"
-
     # Counts
     live = sum(1 for k, v in inds.items() if v.get("status") == "ok" and not v.get("stale_since_iso"))
     seeded = sum(1 for k, v in inds.items() if v.get("status") == "ok" and v.get("stale_since_iso"))
@@ -83,44 +90,73 @@ def build_message(data: dict, date_str: str) -> str:
         tail += f"（{failed}失效）"
 
     url = "https://soohucn-gif.github.io/market-sentiment-daily/"
-    line = (
+    return (
         f"美股情绪 {mm_dd}｜"
         f"{token_str} {fng_str} {vix_str} {aaii_str} {pc_str} {breadth_str}"
         f"｜{tail}\n{url}"
     )
-    return line
 
 
-def send(webhook_url: str, text: str) -> bool:
-    """Send text message via Feishu custom-bot webhook. Returns True on success."""
-    payload = json.dumps({"msg_type": "text", "content": {"text": text}}, ensure_ascii=False)
-    cmd = [
-        "curl", "-sS", "--fail", "--max-time", "15",
-        "-H", "Content-Type: application/json",
-        "-d", payload,
-        webhook_url,
-    ]
+def _curl_post(url: str, payload: str, headers: list[str]) -> tuple[int, str]:
+    """Run curl POST, return (returncode, response_body)."""
+    cmd = ["curl", "-sS", "--fail", "--max-time", "15"]
+    for h in headers:
+        cmd += ["-H", h]
+    cmd += ["-d", payload, url]
     result = subprocess.run(cmd, capture_output=True)
-    if result.returncode != 0:
-        err = result.stderr.decode(errors="replace").strip()[:200]
-        print(f"[notify_feishu] curl failed: {err}", file=sys.stderr)
+    return result.returncode, result.stdout.decode(errors="replace")
+
+
+def get_tenant_token(app_id: str, app_secret: str) -> str:
+    """Exchange APP_ID + APP_SECRET for a 2-hour tenant_access_token."""
+    payload = json.dumps({"app_id": app_id, "app_secret": app_secret})
+    rc, body = _curl_post(
+        f"{_FEISHU_BASE}/auth/v3/tenant_access_token/internal",
+        payload,
+        ["Content-Type: application/json"],
+    )
+    if rc != 0:
+        raise RuntimeError(f"feishu auth curl failed (exit {rc})")
+    data = json.loads(body)
+    if data.get("code", -1) != 0:
+        raise RuntimeError(f"feishu auth error: {body[:200]}")
+    return data["tenant_access_token"]
+
+
+def send_message(tenant_token: str, open_id: str, text: str) -> bool:
+    """Send a text message to open_id. Returns True on success."""
+    # Feishu /im/v1/messages requires `content` to be a JSON-encoded string.
+    content = json.dumps({"text": text}, ensure_ascii=False)
+    payload = json.dumps(
+        {"receive_id": open_id, "msg_type": "text", "content": content},
+        ensure_ascii=False,
+    )
+    rc, body = _curl_post(
+        f"{_FEISHU_BASE}/im/v1/messages?receive_id_type=open_id",
+        payload,
+        [
+            "Content-Type: application/json",
+            f"Authorization: Bearer {tenant_token}",
+        ],
+    )
+    if rc != 0:
+        print(f"[notify_feishu] curl failed (exit {rc}): {body[:200]}", file=sys.stderr)
         return False
-    resp = result.stdout.decode(errors="replace")
-    try:
-        body = json.loads(resp)
-        if body.get("code", 0) != 0 or body.get("StatusCode", 0) != 0:
-            print(f"[notify_feishu] Feishu error: {resp[:200]}", file=sys.stderr)
-            return False
-    except Exception:
-        pass
+    data = json.loads(body)
+    if data.get("code", -1) != 0:
+        print(f"[notify_feishu] Feishu API error: {body[:300]}", file=sys.stderr)
+        return False
     return True
 
 
 def main():
-    webhook = os.environ.get("FEISHU_WEBHOOK_URL", "").strip()
-    if not webhook:
-        print("[notify_feishu] FEISHU_WEBHOOK_URL not set — skipping Feishu notification.", file=sys.stderr)
+    app_secret = os.environ.get("FEISHU_APP_SECRET", "").strip()
+    if not app_secret:
+        print("[notify_feishu] FEISHU_APP_SECRET not set — skipping.", file=sys.stderr)
         sys.exit(1)
+
+    app_id = os.environ.get("FEISHU_APP_ID", _DEFAULT_APP_ID).strip()
+    open_id = os.environ.get("FEISHU_OPEN_ID", _DEFAULT_OPEN_ID).strip()
 
     data_path = sys.argv[1] if len(sys.argv) > 1 else "data.json"
     date_str = sys.argv[2] if len(sys.argv) > 2 else datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -129,7 +165,13 @@ def main():
     msg = build_message(data, date_str)
     print(f"[notify_feishu] Sending:\n{msg}")
 
-    ok = send(webhook, msg)
+    try:
+        token = get_tenant_token(app_id, app_secret)
+    except Exception as e:
+        print(f"[notify_feishu] Failed to get tenant token: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    ok = send_message(token, open_id, msg)
     sys.exit(0 if ok else 1)
 
 
